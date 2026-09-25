@@ -174,11 +174,20 @@ app.get('/oauth/gmail/callback', async (c) => {
       return c.text('Google 换 Token 失败: ' + JSON.stringify(data), 400);
     }
 
+    // 🚨 关键安全检查：如果 Google 没给 refresh_token，直接拦截！
+    if (!data.refresh_token) {
+      return c.text('授权失败：未能获取到 Refresh Token。这通常是因为你之前授权过。请前往 Google 账号设置 -> 安全性 -> 第三方应用，删除本应用的授权，然后再重新试一次！', 400);
+    }
+
     const profile = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile', {
       headers: { Authorization: 'Bearer ' + data.access_token },
     });
     const profileData: any = await profile.json();
     const email = profileData.emailAddress;
+
+    if (!email) {
+      return c.text('授权失败：无法获取 Gmail 邮箱地址，请重试。', 400);
+    }
 
     const id = crypto.randomUUID();
     await c.env.DB.prepare(
