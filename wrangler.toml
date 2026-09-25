@@ -7,3 +7,14 @@ compatibility_flags = ["nodejs_compat"]
 directory = "./public"
 binding = "ASSETS"
 run_worker_first = true
+
+[[d1_databases]]
+binding = "DB"
+database_id = "a0cdfc05-01ad-45db-bc58-22702b205921"
+
+[[kv_namespaces]]
+binding = "TOKEN_KV"
+id = "811fa279fb0a41b597e33dbdcae74bde"
+
+[vars]
+APP_NAME = "hyxyyds邮箱整理系统"
