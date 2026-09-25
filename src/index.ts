@@ -152,31 +152,43 @@ app.post('/api/accounts/:id/send', async (c) => {
 });
 
 app.get('/oauth/gmail/callback', async (c) => {
-  const code = c.req.query('code');
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    body: new URLSearchParams({
-      code: code!,
-      client_id: c.env.GOOGLE_CLIENT_ID,
-      client_secret: c.env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: `${new URL(c.req.url).origin}/oauth/gmail/callback`,
-      grant_type: 'authorization_code',
-    }),
-  });
-  const data = await res.json() as any;
-  const profile = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile', {
-    headers: { Authorization: `Bearer ${data.access_token}` },
-  });
-  const profileData = await profile.json() as any;
-  const email = profileData.emailAddress;
+  try {
+    const code = c.req.query('code');
+    if (!code) return c.text('错误: 没有收到 code 参数', 400);
 
-  const id = crypto.randomUUID();
-  await c.env.DB.prepare(
-    `INSERT INTO accounts (id, email, provider, auth_type, oauth_refresh_token, created_at)
-     VALUES (?, ?, 'gmail', 'oauth', ?, ?)`
-  ).bind(id, email, data.refresh_token, Date.now()).run();
+    const redirectUri = new URL(c.req.url).origin + '/oauth/gmail/callback';
 
-  return c.redirect('/');
+    const res = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      body: new URLSearchParams({
+        code: code,
+        client_id: c.env.GOOGLE_CLIENT_ID,
+        client_secret: c.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    const data: any = await res.json();
+    if (!res.ok) {
+      return c.text('Google 换 Token 失败: ' + JSON.stringify(data), 400);
+    }
+
+    const profile = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile', {
+      headers: { Authorization: 'Bearer ' + data.access_token },
+    });
+    const profileData: any = await profile.json();
+    const email = profileData.emailAddress;
+
+    const id = crypto.randomUUID();
+    await c.env.DB.prepare(
+      "INSERT INTO accounts (id, email, provider, auth_type, oauth_refresh_token, created_at) VALUES (?, ?, 'gmail', 'oauth', ?, ?)"
+    ).bind(id, email, data.refresh_token, Date.now()).run();
+
+    return c.redirect('/');
+  } catch (err: any) {
+    return c.text('Worker 严重崩溃: ' + err.message, 500);
+  }
 });
 
 app.get('/oauth/ms/callback', async (c) => {
