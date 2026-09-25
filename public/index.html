@@ -1,226 +1,33 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Unified Mail</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
-    .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    input, select { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    button { background: #2563eb; color: white; border: none; padding: 10px 16px; border-radius: 4px; width: 100%; font-size: 16px; }
-    .account-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
-    .btn-del { background: #dc2626; width: auto; padding: 4px 10px; font-size: 12px; }
-  </style>
+  <title>登录测试</title>
 </head>
 <body>
-  <h2>📬 统一邮件管理</h2>
-
-  <!-- 登录卡片 -->
-  <div id="login-card" class="card">
-    <h3>管理员登录</h3>
-    <input id="admin-pwd" type="password" placeholder="请输入管理密码 (ADMIN_PASSWORD)">
-    <button id="btn-login">登录</button>
-  </div>
-
-  <!-- 主内容区（默认隐藏） -->
-  <div id="main-content" style="display:none;">
-    <div class="card">
-      <h3>添加通用 IMAP 邮箱</h3>
-      <input id="email" placeholder="邮箱地址 (例如: 12345@qq.com)">
-      <input id="imap_host" placeholder="IMAP 服务器 (例如: imap.qq.com)">
-      <input id="imap_port" value="993" placeholder="IMAP 端口">
-      <input id="smtp_host" placeholder="SMTP 服务器 (例如: smtp.qq.com)">
-      <input id="smtp_port" value="465" placeholder="SMTP 端口">
-      <input id="password" type="password" placeholder="密码或授权码">
-      <button id="btn-save">保存邮箱</button>
-    </div>
-
-    <div class="card">
-      <h3>已连接的邮箱</h3>
-      <div id="account-list">加载中...</div>
-    </div>
-  </div>
+  <h2>登录测试</h2>
+  <input id="pwd" type="password" placeholder="输入密码">
+  <button onclick="doLogin()">点击登录</button>
+  <p id="result"></p>
 
   <script>
-    // 绑定登录按钮
-    document.getElementById('btn-login').addEventListener('click', function() {
-      var pwd = document.getElementById('admin-pwd').value;
+    function doLogin() {
+      var password = document.getElementById('pwd').value;
       fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pwd })
-      }).then(function(res) {
+        body: JSON.stringify({ password: password })
+      })
+      .then(function(res) {
         if (res.ok) {
-          document.getElementById('login-card').style.display = 'none';
-          document.getElementById('main-content').style.display = 'block';
-          loadAccounts();
+          document.getElementById('result').innerText = '登录成功！';
         } else {
-          alert('密码错误');
+          document.getElementById('result').innerText = '密码错误';
         }
-      });
-    });
-
-    // 绑定保存邮箱按钮
-    document.getElementById('btn-save').addEventListener('click', function() {
-      var body = {
-        email: document.getElementById('email').value,
-        imap_host: document.getElementById('imap_host').value,
-        imap_port: parseInt(document.getElementById('imap_port').value),
-        smtp_host: document.getElementById('smtp_host').value,
-        smtp_port: parseInt(document.getElementById('smtp_port').value),
-        password: document.getElementById('password').value
-      };
-      fetch('/api/accounts/imap', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      }).then(function(res) {
-        if (res.ok) {
-          alert('添加成功！');
-          loadAccounts();
-        } else {
-          if (res.status === 401) { alert('登录已失效，请刷新页面重新登录'); }
-app.get('/', (c) => {
-  return c.html(`
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Unified Mail</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
-    .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    input, select { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    button { background: #2563eb; color: white; border: none; padding: 10px 16px; border-radius: 4px; width: 100%; font-size: 16px; }
-    .account-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; align-items: center; }
-    .btn-del { background: #dc2626; width: auto; padding: 4px 10px; font-size: 12px; }
-    .btn-view { background: #16a34a; width: auto; padding: 4px 10px; font-size: 12px; }
-    .btn-gmail { background: #ea4335; margin-bottom: 10px; }
-    .btn-ms { background: #00a4ef; margin-bottom: 10px; }
-    .msg-item { padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
-    .msg-subject { font-weight: bold; }
-    .msg-meta { font-size: 12px; color: #888; }
-  </style>
-</head>
-<body>
-  <h2>📬 统一邮件管理</h2>
-
-  <div id="login-card" class="card">
-    <h3>管理员登录</h3>
-    <input id="admin-pwd" type="password" placeholder="请输入管理密码">
-    <button id="btn-login">登录</button>
-  </div>
-
-  <div id="main-content" style="display:none;">
-    <div class="card">
-      <h3>添加通用 IMAP 邮箱</h3>
-      <input id="email" placeholder="邮箱地址">
-      <input id="imap_host" placeholder="IMAP 服务器">
-      <input id="imap_port" value="993" placeholder="IMAP 端口">
-      <input id="smtp_host" placeholder="SMTP 服务器">
-      <input id="smtp_port" value="465" placeholder="SMTP 端口">
-      <input id="password" type="password" placeholder="密码或授权码">
-      <button id="btn-save">保存邮箱</button>
-    </div>
-
-    <div class="card">
-      <h3>添加 Gmail 账户</h3>
-      <button class="btn-gmail" id="btn-gmail-auth">使用 Google 账号授权</button>
-    </div>
-
-    <div class="card">
-      <h3>添加 Outlook 账户</h3>
-      <button class="btn-ms" id="btn-ms-auth">使用 Microsoft 账号授权</button>
-    </div>
-
-    <div class="card">
-      <h3>已连接的邮箱</h3>
-      <div id="account-list">加载中...</div>
-    </div>
-
-    <div class="card" id="mail-list-card" style="display:none;">
-      <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-        <h3 id="mail-list-title">邮件列表</h3>
-        <button class="btn-del" id="btn-close-mail" style="width:auto;">关闭</button>
-      </div>
-      <div id="mail-list">加载中...</div>
-    </div>
-  </div>
-
-  <script>
-    var G_ID = '${c.env.GOOGLE_CLIENT_ID}';
-    var M_ID = '${c.env.MS_CLIENT_ID}';
-
-    document.getElementById('btn-login').addEventListener('click', function() {
-      var pwd = document.getElementById('admin-pwd').value;
-      fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pwd }) })
-      .then(function(res) {
-        if (res.ok) { document.getElementById('login-card').style.display = 'none'; document.getElementById('main-content').style.display = 'block'; loadAccounts(); }
-        else { alert('密码错误'); }
-      });
-    });
-
-    document.getElementById('btn-gmail-auth').addEventListener('click', function() {
-      var redirectUri = window.location.origin + '/oauth/gmail/callback';
-      var scope = 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send';
-      var url = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + encodeURIComponent(G_ID) + '&redirect_uri=' + encodeURIComponent(redirectUri) + '&response_type=code&scope=' + encodeURIComponent(scope) + '&access_type=offline&prompt=consent';
-      window.location.href = url;
-    });
-
-    document.getElementById('btn-ms-auth').addEventListener('click', function() {
-      var redirectUri = window.location.origin + '/oauth/ms/callback';
-      var scope = 'https://graph.microsoft.com/Mail.ReadWrite https://graph.microsoft.com/Mail.Send offline_access User.Read';
-      var url = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=' + encodeURIComponent(M_ID) + '&redirect_uri=' + encodeURIComponent(redirectUri) + '&response_type=code&scope=' + encodeURIComponent(scope);
-      window.location.href = url;
-    });
-
-    document.getElementById('btn-save').addEventListener('click', function() {
-      var body = { email: document.getElementById('email').value, imap_host: document.getElementById('imap_host').value, imap_port: parseInt(document.getElementById('imap_port').value), smtp_host: document.getElementById('smtp_host').value, smtp_port: parseInt(document.getElementById('smtp_port').value), password: document.getElementById('password').value };
-      fetch('/api/accounts/imap', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      .then(function(res) {
-        if (res.ok) { alert('添加成功！'); loadAccounts(); }
-        else { res.json().then(function(d) { alert('失败: ' + d.error); }); }
-      });
-    });
-
-    document.getElementById('btn-close-mail').addEventListener('click', function() { document.getElementById('mail-list-card').style.display = 'none'; });
-
-    document.getElementById('account-list').addEventListener('click', function(e) {
-      var id = e.target.getAttribute('data-id');
-      if (e.target.classList.contains('btn-del')) {
-        if (confirm('确定删除吗？')) { fetch('/api/accounts/' + id, { method: 'DELETE' }).then(function() { loadAccounts(); }); }
-      }
-      if (e.target.classList.contains('btn-view')) {
-        document.getElementById('mail-list-card').style.display = 'block';
-        document.getElementById('mail-list-title').innerText = e.target.getAttribute('data-email') + ' 的收件箱';
-        document.getElementById('mail-list').innerHTML = '正在拉取...';
-        fetch('/api/accounts/' + id + '/messages').then(function(res) { return res.json(); }).then(function(data) {
-            var list = document.getElementById('mail-list');
-            if (data.error) { list.innerHTML = '<p style="color:red;">失败: ' + data.error + '</p>'; return; }
-            if (!data || data.length === 0) { list.innerHTML = '<p style="color:#888;">没有邮件。</p>'; return; }
-            var h = '';
-            for (var i = 0; i < data.length; i++) { h += '<div class="msg-item"><div class="msg-subject">' + (data[i].subject || '(无主题)') + '</div><div class="msg-meta">' + (data[i].from || data[i].from_addr || '') + '</div></div>'; }
-            list.innerHTML = h;
-        });
-      }
-    });
-
-    function loadAccounts() {
-      fetch('/api/accounts').then(function(res) {
-        if (res.status === 401) { document.getElementById('login-card').style.display = 'block'; document.getElementById('main-content').style.display = 'none'; return; }
-        return res.json().then(function(accounts) {
-          var list = document.getElementById('account-list');
-          if (!accounts || accounts.length === 0) { list.innerHTML = '<p style="color:#888;">还没有添加任何邮箱。</p>'; return; }
-          var h = '';
-          for (var i = 0; i < accounts.length; i++) {
-            h += '<div class="account-item"><span>' + accounts[i].email + ' (' + accounts[i].provider + ')</span><div>';
-            h += '<button class="btn-view" data-id="' + accounts[i].id + '" data-email="' + accounts[i].email + '">查看</button> ';
-            h += '<button class="btn-del" data-id="' + accounts[i].id + '">删除</button></div></div>';
-          }
-          list.innerHTML = h;
-        });
+      })
+      .catch(function(err) {
+        document.getElementById('result').innerText = '请求失败';
       });
     }
   </script>
