@@ -22,6 +22,13 @@ app.get('/', async (c) => {
   return c.env.ASSETS.fetch(c.req.raw);
 });
 
+app.get('/api/config', (c) => {
+  return c.json({
+    googleClientId: c.env.GOOGLE_CLIENT_ID,
+    msClientId: c.env.MS_CLIENT_ID
+  });
+});
+
 app.post('/api/login', async (c) => {
   const body = await c.req.json();
   if (body.password === c.env.ADMIN_PASSWORD) {
