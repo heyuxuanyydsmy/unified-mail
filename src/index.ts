@@ -179,11 +179,18 @@ app.get('/oauth/gmail/callback', async (c) => {
       return c.text('授权失败：未能获取到 Refresh Token。这通常是因为你之前授权过。请前往 Google 账号设置 -> 安全性 -> 第三方应用，删除本应用的授权，然后再重新试一次！', 400);
     }
 
-        const profile = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+    // 获取用户邮箱
+    const profile = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: { Authorization: 'Bearer ' + data.access_token },
     });
     const profileData: any = await profile.json();
-    const email = profileData.email; 
+
+    // 打印出 Google 到底返回了什么（如果有错，就在这里显示了）
+    if (!profileData.email) {
+      return c.text('获取邮箱失败，Google 原始返回: ' + JSON.stringify(profileData), 400);
+    }
+
+    const email = profileData.email;
 
     if (!email) {
       return c.text('授权失败：无法获取 Gmail 邮箱地址，请重试。', 400);
